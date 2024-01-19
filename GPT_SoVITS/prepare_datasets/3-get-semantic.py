@@ -38,7 +38,7 @@ semantic_path = "%s/6-name2semantic-%s.tsv" % (opt_dir, i_part)
 if os.path.exists(semantic_path) == False:
     os.makedirs(opt_dir, exist_ok=True)
 
-    device = "cuda:0"
+    device = "cpu"
     hps = utils.get_hparams_from_file(s2config_path)
     vq_model = SynthesizerTrn(
         hps.data.filter_length // 2 + 1,
@@ -47,7 +47,7 @@ if os.path.exists(semantic_path) == False:
         **hps.model
     )
     if is_half == True:
-        vq_model = vq_model.half().to(device)
+        vq_model = vq_model.float().to(device)
     else:
         vq_model = vq_model.to(device)
     vq_model.eval()
@@ -65,7 +65,7 @@ if os.path.exists(semantic_path) == False:
             return
         ssl_content = torch.load(hubert_path, map_location="cpu")
         if is_half == True:
-            ssl_content = ssl_content.half().to(device)
+            ssl_content = ssl_content.float().to(device)
         else:
             ssl_content = ssl_content.to(device)
         codes = vq_model.extract_latent(ssl_content)

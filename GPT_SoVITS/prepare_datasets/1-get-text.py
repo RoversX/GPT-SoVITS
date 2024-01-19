@@ -46,7 +46,7 @@ if os.path.exists(txt_path) == False:
     bert_dir = "%s/3-bert" % (opt_dir)
     os.makedirs(opt_dir, exist_ok=True)
     os.makedirs(bert_dir, exist_ok=True)
-    device = "cuda:0"
+    device = "cpu"
     tokenizer = AutoTokenizer.from_pretrained(bert_pretrained_dir)
     bert_model = AutoModelForMaskedLM.from_pretrained(bert_pretrained_dir)
     if is_half == True:

@@ -47,7 +47,7 @@ os.makedirs(wav32dir,exist_ok=True)
 
 maxx=0.95
 alpha=0.5
-device="cuda:0"
+device="cpu"
 model=cnhubert.get_model()
 if(is_half==True):
     model=model.half().to(device)
