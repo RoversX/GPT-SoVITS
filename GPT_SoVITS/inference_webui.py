@@ -30,11 +30,11 @@ from time import time as ttime
 from module.mel_processing import spectrogram_torch
 from my_utils import load_audio
 
-device = "cuda"
+device = "cpu"
 tokenizer = AutoTokenizer.from_pretrained(bert_path)
 bert_model = AutoModelForMaskedLM.from_pretrained(bert_path)
 if is_half == True:
-    bert_model = bert_model.half().to(device)
+    bert_model = bert_model.float().to(device)
 else:
     bert_model = bert_model.to(device)
 
@@ -53,7 +53,7 @@ def get_bert_feature(text, word2ph):
         repeat_feature = res[i].repeat(word2ph[i], 1)
         phone_level_feature.append(repeat_feature)
     phone_level_feature = torch.cat(phone_level_feature, dim=0)
-    # if(is_half==True):phone_level_feature=phone_level_feature.half()
+    # if(is_half==True):phone_level_feature=phone_level_feature.float()
     return phone_level_feature.T
 
 
@@ -97,7 +97,7 @@ dict_s1 = torch.load(gpt_path, map_location="cpu")
 config = dict_s1["config"]
 ssl_model = cnhubert.get_model()
 if is_half == True:
-    ssl_model = ssl_model.half().to(device)
+    ssl_model = ssl_model.float().to(device)
 else:
     ssl_model = ssl_model.to(device)
 
@@ -108,7 +108,7 @@ vq_model = SynthesizerTrn(
     **hps.model
 )
 if is_half == True:
-    vq_model = vq_model.half().to(device)
+    vq_model = vq_model.float().to(device)
 else:
     vq_model = vq_model.to(device)
 vq_model.eval()
@@ -119,7 +119,7 @@ max_sec = config["data"]["max_sec"]
 t2s_model = Text2SemanticLightningModule(config, "ojbk", is_train=False)
 t2s_model.load_state_dict(dict_s1["weight"])
 if is_half == True:
-    t2s_model = t2s_model.half()
+    t2s_model = t2s_model.float()
 t2s_model = t2s_model.to(device)
 t2s_model.eval()
 total = sum([param.nelement() for param in t2s_model.parameters()])
@@ -153,7 +153,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language)
         wav16k, sr = librosa.load(ref_wav_path, sr=16000)  # 派蒙
         wav16k = torch.from_numpy(wav16k)
         if is_half == True:
-            wav16k = wav16k.half().to(device)
+            wav16k = wav16k.float().to(device)
         else:
             wav16k = wav16k.to(device)
         ssl_content = ssl_model.model(wav16k.unsqueeze(0))[
@@ -213,7 +213,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language)
         )  # .unsqueeze(0)#mq要多unsqueeze一次
         refer = get_spepc(hps, ref_wav_path)  # .to(device)
         if is_half == True:
-            refer = refer.half().to(device)
+            refer = refer.float().to(device)
         else:
             refer = refer.to(device)
         # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
